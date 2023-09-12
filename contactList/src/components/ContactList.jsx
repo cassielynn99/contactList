@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ContactRow from "./ContactRow";
 
 const dummyContacts = [
@@ -7,13 +7,25 @@ const dummyContacts = [
   { id: 2, name: "C-3PO", phone: "333-333-3333", email: "c3po@droids.com" },
   { id: 3, name: "BB-8", phone: "888-888-8888", email: "bb8@droids.com" },
 ];
-
-// Delete the comments inside the { } and write a map() statement. Map over your contacts array.
-// For each contact, return a ContactRow component.
-// Ensure you also pass the single contact into the component as a prop.
-
-function ContactList() {
-  const [contacts, setContacts] = useState(dummyContacts);
+const contactData = `https://fsa-jsonplaceholder-69b5c48f1259.herokuapp.com/users`;
+function ContactList({ setSelectedContactId }) {
+  const [contacts, setContacts] = useState([]);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    async function fetchContacts() {
+      try {
+        const response = await fetch(`${contactData}`);
+        const result = await response.json();
+        console.log("here are your contacts", result);
+        console.log("each person", contacts);
+        setContacts(result);
+      } catch (error) {
+        console.log(error);
+        setError(error);
+      }
+    }
+    fetchContacts();
+  }, []);
   console.log("Contacts: ", contacts);
   return (
     <table>
@@ -28,9 +40,19 @@ function ContactList() {
           <td>Email</td>
           <td>Phone</td>
         </tr>
-        {contacts.map((contact) => {
-          return <ContactRow key={contact.id} contact={contact} />;
-        })}
+        {error ? (
+          <tr>{error}</tr>
+        ) : (
+          contacts.map((contact) => {
+            return (
+              <ContactRow
+                key={contact.id}
+                contact={contact}
+                setSelectedContactId={setSelectedContactId}
+              />
+            );
+          })
+        )}
       </tbody>
     </table>
   );
